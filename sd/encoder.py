@@ -71,7 +71,7 @@ class VAE_Encoder(nn.Sequential):
         stdev = variance.sqrt()                                 #(Batch_size, 4, Height/8, Width/8)
 
         '''
-        If we want to transorm a standard Normal distribution Z = N(0,1) to a learned Normal distribution X = N(mean, variance) to sample from it:
+        To transorm a standard Normal dist Z = N(0,1) to a learned Normal dist X = N(mean, variance) to sample from it:
         X = mean + stdev*Z
         Directly sampling from X would introduce stochasticity into the computation graph, making gradients undefined. Instead, the reparameterization trick reformulates 
         the sampling process so that the randomness comes only from  "epsilon" , which is independent of mu and sigma. 
@@ -84,4 +84,4 @@ class VAE_Encoder(nn.Sequential):
         x *= 0.18215
 
 
-        return 
+        return x 

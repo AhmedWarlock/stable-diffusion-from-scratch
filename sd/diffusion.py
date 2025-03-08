@@ -75,7 +75,7 @@ class UNET_AttentionBlock(nn.Module):
       self.layernorm_1 = nn.LayerNorm(channels)
       self.self_attention = SelfAttention(n_heads=n_heads, d_embed=d_embed, in_proj_bias=False)
       self.layernorm_2 = nn.LayerNorm(channels)
-      self.cross_attention = SelfAttention(n_heads=n_heads, d_embed=d_embed, d_context= d_context, in_proj_bias=False)
+      self.cross_attention = CrossAttention(n_heads=n_heads, d_embed=d_embed, d_context= d_context, in_proj_bias=False)
       self.layernorm_3 = nn.LayerNorm(channels)
 
       self.gegelu_layer_1 = nn.Linear(channels, 4 * channels * 2)

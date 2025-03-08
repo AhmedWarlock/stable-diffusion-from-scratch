@@ -58,8 +58,6 @@ class CLIPLayer(nn.Module):
 
         return x
         
-        
-
 
 
 class CLIP(nn.Module):

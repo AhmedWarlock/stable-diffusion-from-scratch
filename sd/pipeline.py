@@ -8,7 +8,7 @@ HIEGHT = 512
 LATENT_WIDTH = WIDTH // 8
 LATENT_HIEGHT = HIEGHT // 8
 
-def generate( prompt: str, uncond_probpt: str, input_image=None, strength= 0.8,
+def generate( prompt: str, uncond_prompt: str, input_image=None, strength= 0.8,
              do_cfg= True, cfg_scale=7.5, sampler_name="ddpm", num_inference_steps=50, models={}, seed=None,
              device=None, idle_device=None, tokenizer=None
             ):
@@ -63,13 +63,14 @@ def generate( prompt: str, uncond_probpt: str, input_image=None, strength= 0.8,
 
         if sampler_name == "ddpm":
             sampler = DDPMSampler(generator)
-            sampler.set_inference_timesteps(n_inference_steps)
+            sampler.set_inference_timesteps(num_inference_steps)
         else:
-            raise ValueError("Unknown sampler value %s. ")
+            raise ValueError("Unknown sampler value %s.")
         
         latent_shape = (1, 4, LATENT_HIEGHT, LATENT_WIDTH)
         
-        if input_image: # Image-to-Image generation
+        if input_image: 
+            
             encoder = models["encoder"]
             encoder.to(device)
             
@@ -84,7 +85,7 @@ def generate( prompt: str, uncond_probpt: str, input_image=None, strength= 0.8,
             input_image_tensor = input_image_tensor.permute(0, 3, 2, 1)
             
             encoder_noise = torch.randn(latent_shape, generator=generator, device=device)
-            # run the image through the VAE encoder
+            # run image through the VAE encoder
             latents = encoder(input_image_tensor, encoder_noise)
             
             sampler.set_strength(strength = strength)
@@ -123,4 +124,41 @@ def generate( prompt: str, uncond_probpt: str, input_image=None, strength= 0.8,
             latents = sampler.step(timestep, latents, model_output)
 
         to_idle(diffusion)
+        
+        decoder = models['decoder']
+        decoder.to(device)
+        
+        images = decoder(latents)
+        to_idle(decoder)
+        
+        images = rescale(images, (-1, 1), (0, 255))
+        images = images.permute(0, 2, 3, 1)
+        images = images.to('cpu', torch.uint8).numpy()
+        
+        return images[0]
+    
+    
+    
+def rescale(x, old_scale, new_scale, clamp=False):
+    old_min, old_max = old_scale
+    new_min, new_max = new_scale
+
+    x -= old_min
+    x *= (new_max - new_min) / (old_max - old_min)
+    x += new_min
+    
+    if clamp:
+        x = x.clamp(new_min, new_max)
+        
+    return x
+
+def get_time_embedding(timestep):
+    freqs = torch.pow(1000, torch.arange(0, 160, dtype = torch.float32) / 160) # shape --> (160,)
+    
+    x = torch.tensor([timestep], dtype= torch.float32)[:,None] * freqs[None] # (1,160)
+    
+    return torch.cat([torch.sin(x), torch.cos(x)], dim=-1) # (1, 320)
+    
+    
+        
             

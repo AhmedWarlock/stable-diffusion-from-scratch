@@ -93,7 +93,8 @@ def generate( prompt: str, uncond_prompt: str, input_image=None, strength= 0.8,
             
             to_idle(encoder)
             
-        else: # Text-to-Image
+        # Text-to-Image    
+        else: 
             latents = torch.randn(latent_shape, generator=generator, device=device)
             
         

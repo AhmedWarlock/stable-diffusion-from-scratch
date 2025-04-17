@@ -20,10 +20,10 @@ class DDPMSampler:
         self.timesteps = torch.from_numpy(timesteps)
         
         
-        
     def _get_previous_timestep(self, timestep: int) -> int:
-        prev_t = timestep - self.num_train_timesteps // self.num_inference_steps
+        prev_t = timestep - self.num_training_steps // self.num_inference_steps
         return prev_t
+    
     
     def _get_variance(self, timestep: int) -> torch.Tensor:
         prev_t = self._get_previous_timestep(timestep)
